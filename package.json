@@ -1,0 +1,27 @@
+{
+  "name": "github-issue-templates",
+  "version": "1.0.0",
+  "bin": {
+    "github-issue-templates": "./bin.js"
+  },
+  "scripts": {
+    "start": "node ./bin.js"
+  },
+  "author": "Marc Bachmann <marc.brookman@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "nunjucks": "^3.0.0",
+    "redent": "^2.0.0",
+    "yargs": "^8.0.1"
+  },
+  "description": "[//]: <> (This file is generated from /templates/README.md. Please don't edit the one in the root directory)",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marcbachmann/github-issue-templates.git"
+  },
+  "bugs": {
+    "url": "https://github.com/marcbachmann/github-issue-templates/issues"
+  },
+  "homepage": "https://github.com/marcbachmann/github-issue-templates#readme"
+}
