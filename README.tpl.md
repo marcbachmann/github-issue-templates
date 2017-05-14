@@ -30,6 +30,7 @@ Check the content in [github-issues-templates/.github/ISSUE_TEMPLATES])(./.githu
 
 ```bash
 # Run
+$ npm install github-issue-templates -g
 $ github-issue-templates
 
 # the previous command has those defaults
