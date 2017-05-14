@@ -1,21 +1,25 @@
 {
   "name": "github-issue-templates",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "bin": {
     "github-issue-templates": "./bin.js"
   },
   "scripts": {
-    "start": "node ./bin.js"
+    "build": "node ./bin.js",
+    "test": "standard"
   },
   "author": "Marc Bachmann <marc.brookman@gmail.com>",
   "license": "ISC",
   "dependencies": {
+    "front-matter": "^2.1.2",
+    "github-issue-url": "^1.0.0",
     "nunjucks": "^3.0.0",
-    "redent": "^2.0.0",
     "yargs": "^8.0.1"
   },
-  "description": "[//]: <> (This file is generated from /templates/README.md. Please don't edit the one in the root directory)",
-  "devDependencies": {},
+  "description": "A github issue url creation script & chrome extension",
+  "devDependencies": {
+    "standard": "^10.0.2"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/marcbachmann/github-issue-templates.git"
@@ -23,5 +27,10 @@
   "bugs": {
     "url": "https://github.com/marcbachmann/github-issue-templates/issues"
   },
-  "homepage": "https://github.com/marcbachmann/github-issue-templates#readme"
+  "homepage": "https://github.com/marcbachmann/github-issue-templates#readme",
+  "standard": {
+    "ignore": [
+      "/extension/dist/content.js"
+    ]
+  }
 }

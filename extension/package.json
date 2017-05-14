@@ -1,0 +1,23 @@
+{
+  "name": "chrome-github-issue-templates",
+  "version": "1.0.0",
+  "description": "Chrome extension that supports issue templates",
+  "devDependencies": {
+    "browserify": "^14.3.0",
+    "github-injection": "^0.3.0",
+    "github-issue-templates": "file:../",
+    "standard": "^10.0.2"
+  },
+  "scripts": {
+    "build": "browserify content.src.js -o ./dist/content.js",
+    "test": "standard"
+  },
+  "author": "Marc Bachmann <marc.brookman@gmail.com>",
+  "license": "ISC",
+  "dependencies": {},
+  "standard": {
+    "ignore": [
+      "/dist/content.js"
+    ]
+  }
+}

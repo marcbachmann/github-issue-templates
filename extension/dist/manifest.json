@@ -1,0 +1,24 @@
+{
+	"name": "Github Issue Templates",
+	"version": "1.0.0",
+	"description": "Enhances the `New Issue` button to support multiple templates.",
+	"homepage_url": "https://github.com/marcbachmann/github-issue-templates",
+	"manifest_version": 2,
+	"minimum_chrome_version": "58",
+	"permissions": [
+		"https://github.com/",
+		"https://raw.githubusercontent.com/",
+		"storage"
+	],
+	"icons": {
+		"128": "icon.png"
+	},
+	"content_scripts": [
+		{
+			"run_at": "document_start",
+			"matches": ["https://github.com/*"],
+			"css": ["content.css"],
+			"js": ["content.js"]
+		}
+	]
+}
