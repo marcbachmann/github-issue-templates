@@ -17,7 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (err) return console.error(err)
         if (!templates.length) return
 
-        const dropdownString = renderList(templates)
+        const currentButton = document.querySelector('.issues-listing .subnav .btn-primary')
+        const buttonText = currentButton.textContent.trim()
+        const dropdownString = renderList(buttonText, templates)
+
         const tempEl = document.createElement('div')
         tempEl.innerHTML = dropdownString
         const dropdown = tempEl.children[0]
@@ -27,11 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 })
 
-function renderList (templates) {
+function renderList (buttonText, templates) {
   return `
    <div class="float-right select-menu js-menu-container js-select-menu">
       <button class="btn btn-primary select-menu-button js-menu-target" type="button">
-        New Issue
+        ${buttonText}
       </button>
       <div class="github-issue-templates-content select-menu-modal-holder js-menu-content js-navigation-container">
         <div class="select-menu-modal">
