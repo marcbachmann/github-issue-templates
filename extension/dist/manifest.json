@@ -1,6 +1,6 @@
 {
   "name": "Github Issue Templates",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "marcbachmann",
   "description": "Enhances the `New Issue` button to support multiple templates.",
   "homepage_url": "https://github.com/marcbachmann/github-issue-templates",
