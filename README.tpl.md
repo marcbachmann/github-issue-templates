@@ -1,4 +1,4 @@
-[//]: <> (This file is generated from /README.tpl.md. Please don't edit the one in the root directory)
+<!-- This file is generated from /README.tpl.md. Please don't edit the one in the root director -->
 
 # <img src="extension/dist/icon.png" width="45" align="left"> Github Issue Templates
 
