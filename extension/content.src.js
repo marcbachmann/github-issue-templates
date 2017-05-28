@@ -1,4 +1,4 @@
-/* globals XMLHttpRequest */
+/* globals XMLHttpRequest, chrome, btoa */
 'use strict'
 const githubIssueUrl = require('github-issue-url')
 const gitHubInjection = require('github-injection')
@@ -10,22 +10,28 @@ const isIssueList = () => isRepo() && /^\/issues\/?$/.test(getRepoPath())
 const getOwnerAndRepo = () => window.location.pathname.split('/').slice(1, 3)
 const getRepo = () => getOwnerAndRepo().join('/')
 
+const getDomainConfig = (name, cb) => {
+  const keyName = `domain:${name}`
+  chrome.storage.sync.get(keyName, function (items) {
+    const domain = items[keyName]
+    if (domain) {
+      if (!domain.templates) domain.templates = '.github/ISSUE_TEMPLATES.md'
+      cb(null, domain)
+    } else {
+      cb(null, {
+        name: 'github.com',
+        templates: '.github/ISSUE_TEMPLATES.md'
+      })
+    }
+  })
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  chrome.storage.sync.get({
-    github_user: '',
-    github_password: '',
-    templates: '.github/ISSUE_TEMPLATES.md',
-    domain: 'github.com',
-  }, function(items) {
-
-    var github_user = items.github_user;
-    var github_password = items.github_password;
-    var templates = items.templates;
-    var domain = items.domain;
-
+  getDomainConfig(window.location.hostname, function (err, domain) {
+    if (err) throw err
     gitHubInjection(window, function () {
-      if ( domain == window.location.hostname && isIssueList() && !document.querySelector('.issues-listing .github-issue-templates-content')) {
-        getTemplateDefinition({repo: getRepo(), github_password: github_password, github_user: github_user, templates: templates}, function (err, templates) {
+      if (domain && isIssueList() && !document.querySelector('.issues-listing .github-issue-templates-content')) {
+        getTemplateDefinition({repo: getRepo(), domain}, function (err, templates) {
           if (err) return console.error(err)
           if (!templates.length) return
 
@@ -74,36 +80,31 @@ function issueTemplatesList (templates) {
 }
 
 const templateCache = {}
-function getTemplateDefinition ({repo,github_password,github_user,templates}, cb) {
+function getTemplateDefinition ({repo, domain}, cb) {
   if (templateCache[repo]) return cb(null, templateCache[repo])
+
   function respond (templates) {
     templateCache[repo] = templates
     cb(null, templates)
   }
 
+  const rawUrl = `https://raw.${(domain.name === 'github.com') ? 'githubusercontent.com' : domain.name}`
+  const xhr = new XMLHttpRequest()
+  xhr.open('GET', `${rawUrl}/${repo}/master/${domain.templates}`, true)
 
-    var raw_url = `https://raw.githubusercontent.com`
-    if (window.location.hostname != "github.com") {
-      raw_url = `https://raw.${window.location.hostname}`
-    }
+  if (domain.password) {
+    const basicAuth = btoa(`${domain.username || ''}:${domain.password}`)
+    xhr.setRequestHeader('Authorization', `Basic ${basicAuth}`)
+  }
 
-    var xhr = new XMLHttpRequest()
-    xhr.open('GET', `${raw_url}/${repo}/master/${templates}`, true)
-
-    if ( github_password != "" ) {
-      xhr.setRequestHeader("Authorization", "Basic " + btoa(github_user + ":" + github_password))
-    }
-
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState !== XMLHttpRequest.DONE) return
-      if (xhr.status === 404) return respond([])
-      if (xhr.status === 200) return respond(extractTemplates(xhr.responseText))
-      console.log(xhr.readyState, xhr.status, xhr.responseText)
-    }
-    xhr.send()
-
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState !== XMLHttpRequest.DONE) return
+    if (xhr.status === 404) return respond([])
+    if (xhr.status === 200) return respond(extractTemplates(xhr.responseText))
+    console.log(xhr.readyState, xhr.status, xhr.responseText)
+  }
+  xhr.send()
 }
-
 
 function extractTemplates (string) {
   const templates = hugeTemplateToTemplatesArray(string)

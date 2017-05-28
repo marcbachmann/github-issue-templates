@@ -6,10 +6,14 @@
     "browserify": "^14.3.0",
     "github-injection": "^0.3.0",
     "github-issue-templates": "file:../",
+    "ratchet-v2-pmb": "^2.0.2001",
     "standard": "^10.0.2"
   },
   "scripts": {
-    "build": "browserify content.src.js -o ./dist/content.js",
+    "build": "npm run copy-dist && browserify content.src.js -o ./dist/content.js",
+    "copy-dist": "mkdir -p ./dist/ratchet/{css,fonts} && npm run copy-dist-css -s && npm run copy-dist-fonts -s",
+    "copy-dist-css": "cp ./node_modules/ratchet-v2-pmb/css/ratchet.min.css dist/ratchet/css/",
+    "copy-dist-fonts": "cp ./node_modules/ratchet-v2-pmb/fonts/ratchicons.woff dist/ratchet/fonts/",
     "test": "standard"
   },
   "author": "Marc Bachmann <marc.brookman@gmail.com>",

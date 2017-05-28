@@ -1,37 +1,51 @@
 <!DOCTYPE html>
 <html>
-<head><title>Github Issue Template</title></head>
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="css/bootstrap.min.css" >
+  <head>
+    <title>Github Issue Template</title>
+    <link rel="stylesheet" type="text/css" href="ratchet/css/ratchet.min.css">
+    <style>
+      html {
+        width: 300px;
+        height: 380px;
+        user-select: none;
+        cursor: default;
+      }
 
-<!-- Optional theme -->
-<link rel="stylesheet" href="css/bootstrap-theme.min.css" >
+      body, .title {
+        color: #333;
+      }
 
-<body>
-<div class="container" style="text-align: center; margin: 1em; width: 300px;">
-  <form onsubmit="return false;">
-    <h3>Github Issues Templates</h3>
-    <h4>Advanced settings</h4>
-    <p><label>Domain</label></p>
-    <input type="text" id="domain" placeholder="github.com" ><br>
-    <p><label>Token or Password</label></p>
-    <input type="password" id="github_password" ><br>
-    <p><label>Username (only if password)</label></p>
-    <input type="text" id="github_user"><br>
-    <p><label>Templates path</label></p>
-    <input style="width: 250px;" type="text" id="templates" placeholder=".github/ISSUE_TEMPLATES.md"><br>
-    <br/>
-  </form>
+      .bar-footer {
+        display: flex;
+      }
 
-  <div id="status"></div>
+      .bar-footer .btn {
+        line-height: 43px;
+      }
 
-  <button id="save" class=".btn .btn-primary" >Save</button>
-</dig>
-<script src="options.js"></script>
-</body>
+      .bar-footer > * {
+        flex-grow: 1;
+      }
+
+      .bar-footer > *:first-child {
+        text-align: left;
+      }
+
+      .bar-footer > *:last-child {
+        text-align: right;
+      }
+
+      .bar-footer .btn .icon {
+        pointer-events: none;
+        font-size: 20px;
+        top: 2px;
+      }
+
+      button {
+        outline: none;
+      }
+    </style>
+  </head>
+  <body></body>
+  <script src="options.js"></script>
 </html>
-<!-- Latest compiled and minified JavaScript -->
-<script src="js/jquery-3.2.1.min.js"></script>
-
-<!-- Latest compiled and minified JavaScript -->
-<script src="js/bootstrap.min.js"></script>
