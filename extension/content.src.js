@@ -7,6 +7,7 @@ const frontmatter = require('front-matter')
 const isRepo = () => /^\/[^/]+\/[^/]+/.test(window.location.pathname)
 const getRepoPath = () => window.location.pathname.replace(/^\/[^/]+\/[^/]+/, '')
 const isIssueList = () => isRepo() && /^\/issues\/?$/.test(getRepoPath())
+const isIssue = () => isRepo() && /^\/issues\/([0-9]+)?$/.test(getRepoPath())
 const getOwnerAndRepo = () => window.location.pathname.split('/').slice(1, 3)
 const getRepo = () => getOwnerAndRepo().join('/')
 
@@ -24,29 +25,36 @@ document.addEventListener('DOMContentLoaded', () => {
     var domain = items.domain;
 
     gitHubInjection(window, function () {
-      if ( domain == window.location.hostname && isIssueList() && !document.querySelector('.issues-listing .github-issue-templates-content')) {
+      if ( domain == window.location.hostname && (isIssueList() || isIssue()) && !document.querySelector('.issues-listing .github-issue-templates-content')) {
         getTemplateDefinition({repo: getRepo(), github_password: github_password, github_user: github_user, templates: templates}, function (err, templates) {
           if (err) return console.error(err)
           if (!templates.length) return
 
-          const currentButton = document.querySelector('.issues-listing .subnav .btn-primary')
+          const currentButton = document.querySelector('.issues-listing .btn-primary')
           const buttonText = currentButton.textContent.trim()
           const dropdownString = renderList(buttonText, templates)
 
           const tempEl = document.createElement('div')
           tempEl.innerHTML = dropdownString
           const dropdown = tempEl.children[0]
-          document.querySelector('.issues-listing .subnav .btn-primary').replaceWith(dropdown)
+          document.querySelector('.issues-listing .btn-primary').replaceWith(dropdown)
         })
       }
     })
   })
 })
 
-function renderList (buttonText, templates) {
+function buttomStyle (){
+  if (isIssue()){
+    return "btn btn-primary btn-sm"
+  }
+  return "btn btn-primary"
+}
+
+function renderList (buttonText,templates) {
   return `
    <div class="float-right select-menu js-menu-container js-select-menu">
-      <button class="btn btn-primary select-menu-button js-menu-target" type="button">
+      <button class="${buttomStyle()} select-menu-button js-menu-target" type="button">
         ${buttonText}
       </button>
       <div class="github-issue-templates-content select-menu-modal-holder js-menu-content js-navigation-container">
