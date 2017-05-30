@@ -10,6 +10,13 @@ const isIssueList = () => isRepo() && /^\/issues\/?$/.test(getRepoPath())
 const getOwnerAndRepo = () => window.location.pathname.split('/').slice(1, 3)
 const getRepo = () => getOwnerAndRepo().join('/')
 
+const sanitize = (str) => str.replace(/[&<"']/g, (m) => {
+  if (m === '&') return '&amp;'
+  if (m === '<') return '&lt;'
+  if (m === '"') return '&quot;'
+  if (m === "'") return '&#039;'
+})
+
 const getDomainConfig = (name, cb) => {
   const keyName = `domain:${name}`
   chrome.storage.sync.get(keyName, function (items) {
@@ -72,7 +79,7 @@ function issueTemplatesList (templates) {
     return `
       <a href="issues/new?${queryString}" class="select-menu-item js-navigation-item">
         <div class="select-menu-item-text">
-          ${template.name}
+          ${sanitize(template.name || 'Unnamed Template')}
         </div>
       </a>
      `
