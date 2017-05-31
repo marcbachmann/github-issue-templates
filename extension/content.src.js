@@ -1,12 +1,9 @@
 /* globals XMLHttpRequest, chrome, btoa */
 'use strict'
 const githubIssueUrl = require('github-issue-url')
-const gitHubInjection = require('github-injection')
 const frontmatter = require('front-matter')
 
-const isRepo = () => /^\/[^/]+\/[^/]+/.test(window.location.pathname)
-const getRepoPath = () => window.location.pathname.replace(/^\/[^/]+\/[^/]+/, '')
-const isIssueList = () => isRepo() && /^\/issues\/?$/.test(getRepoPath())
+const isIssueList = () => !!document.querySelector('.issues-listing a.btn[href$="/issues/new"]')
 const getOwnerAndRepo = () => window.location.pathname.split('/').slice(1, 3)
 const getRepo = () => getOwnerAndRepo().join('/')
 
@@ -33,27 +30,23 @@ const getDomainConfig = (name, cb) => {
   })
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  getDomainConfig(window.location.hostname, function (err, domain) {
-    if (err) throw err
-    gitHubInjection(window, function () {
-      if (domain && isIssueList() && !document.querySelector('.issues-listing .github-issue-templates-content')) {
-        getTemplateDefinition({repo: getRepo(), domain}, function (err, templates) {
-          if (err) return console.error(err)
-          if (!templates.length) return
+getDomainConfig(window.location.hostname, function (err, domain) {
+  if (err) throw err
+  if (domain && isIssueList() && !document.querySelector('.issues-listing .github-issue-templates-content')) {
+    getTemplateDefinition({repo: getRepo(), domain}, function (err, templates) {
+      if (err) return console.error(err)
+      if (!templates.length) return
 
-          const currentButton = document.querySelector('.issues-listing .subnav .btn-primary')
-          const buttonText = currentButton.textContent.trim()
-          const dropdownString = renderList(buttonText, templates)
+      const currentButton = document.querySelector('.issues-listing .subnav .btn-primary')
+      const buttonText = currentButton.textContent.trim()
+      const dropdownString = renderList(buttonText, templates)
 
-          const tempEl = document.createElement('div')
-          tempEl.innerHTML = dropdownString
-          const dropdown = tempEl.children[0]
-          document.querySelector('.issues-listing .subnav .btn-primary').replaceWith(dropdown)
-        })
-      }
+      const tempEl = document.createElement('div')
+      tempEl.innerHTML = dropdownString
+      const dropdown = tempEl.children[0]
+      document.querySelector('.issues-listing .subnav .btn-primary').replaceWith(dropdown)
     })
-  })
+  }
 })
 
 function renderList (buttonText, templates) {
@@ -62,8 +55,9 @@ function renderList (buttonText, templates) {
       <button class="btn btn-primary select-menu-button js-menu-target" type="button">
         ${buttonText}
       </button>
-      <div class="github-issue-templates-content select-menu-modal-holder js-menu-content js-navigation-container">
-        <div class="select-menu-modal">
+      <div class="github-issue-templates-content select-menu-modal-holder js-menu-content js-navigation-container"
+        style="right: 0;">
+        <div class="select-menu-modal" style="width: 220px;">
           <div class="select-menu-list">
               ${issueTemplatesList(templates)}
           </div>

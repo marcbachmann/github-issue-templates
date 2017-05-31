@@ -1,17 +1,4 @@
 /* globals chrome */
-function saveDomain (form, previousName) {
-  if (typeof previousName === 'string') removeDomain(previousName)
-
-  const username = form.querySelector('#username').value
-  const password = form.querySelector('#password').value
-  const templates = form.querySelector('#templates').value
-  const domainName = form.querySelector('#domain').value
-  const domain = {name: domainName, username, password, templates}
-  chrome.storage.sync.set({
-    [`domain:${domain.name}`]: domain
-  })
-}
-
 function removeDomain (domainName) {
   chrome.storage.sync.remove(`domain:${domainName}`)
 }
@@ -109,8 +96,23 @@ function toListItem (domain) {
 
 function onSubmit (evt) {
   evt.preventDefault()
-  saveDomain(evt.target, evt.target.attributes['data-domain'].value)
-  renderList()
+  const form = evt.target
+  const previousName = form.attributes['data-domain'].value
+  const username = form.querySelector('#username').value
+  const password = form.querySelector('#password').value
+  const templates = form.querySelector('#templates').value
+  const domainName = form.querySelector('#domain').value
+
+  chrome.permissions.request({
+    origins: [`https://${domainName}/`, `https://*.${domainName}/`]
+  }, function(granted) {
+    if (granted) {
+      if (typeof previousName === 'string') removeDomain(previousName)
+      const domain = {name: domainName, username, password, templates}
+      chrome.storage.sync.set({[`domain:${domain.name}`]: domain})
+      renderList()
+    }
+  })
 }
 
 function onAction (evt) {
