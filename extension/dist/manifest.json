@@ -14,7 +14,6 @@
     "https://github.ibm.com/",
     "https://*.github.ibm.com/",
     "https://raw.githubusercontent.com/",
-    "https://*.github.com/",
     "storage"
   ],
   "icons": {
