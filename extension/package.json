@@ -4,7 +4,6 @@
   "description": "Chrome extension that supports issue templates",
   "devDependencies": {
     "browserify": "^14.3.0",
-    "github-injection": "^0.3.0",
     "github-issue-templates": "file:../",
     "ratchet-v2-pmb": "^2.0.2001",
     "standard": "^10.0.2"

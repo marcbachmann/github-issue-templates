@@ -4,6 +4,10 @@
   "author": "marcbachmann",
   "description": "Enhances the `New Issue` button to support multiple templates.",
   "homepage_url": "https://github.com/marcbachmann/github-issue-templates",
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
   "browser_action": {
     "default_popup": "options.html"
   },
@@ -11,24 +15,14 @@
   "minimum_chrome_version": "58",
   "permissions": [
     "https://github.com/",
-    "https://github.ibm.com/",
-    "https://*.github.ibm.com/",
     "https://raw.githubusercontent.com/",
-    "https://*.github.com/",
+    "declarativeContent",
     "storage"
+  ],
+  "optional_permissions": [
+    "https://*/"
   ],
   "icons": {
     "128": "icon.png"
-  },
-  "content_scripts": [
-    {
-      "run_at": "document_start",
-      "matches": [
-        "https://github.com/*",
-        "https://github.ibm.com/*"
-      ],
-      "css": ["content.css"],
-      "js": ["content.js"]
-    }
-  ]
+  }
 }
