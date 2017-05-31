@@ -7,33 +7,54 @@ const frontmatter = require('front-matter')
 const isRepo = () => /^\/[^/]+\/[^/]+/.test(window.location.pathname)
 const getRepoPath = () => window.location.pathname.replace(/^\/[^/]+\/[^/]+/, '')
 const isIssueList = () => isRepo() && /^\/issues\/?$/.test(getRepoPath())
+const isIssue = () => isRepo() && /^\/issues\/([0-9]+)?$/.test(getRepoPath())
 const getOwnerAndRepo = () => window.location.pathname.split('/').slice(1, 3)
 const getRepo = () => getOwnerAndRepo().join('/')
 
 document.addEventListener('DOMContentLoaded', () => {
-  gitHubInjection(window, function () {
-    if (isIssueList() && !document.querySelector('.issues-listing .github-issue-templates-content')) {
-      getTemplateDefinition({repo: getRepo()}, function (err, templates) {
-        if (err) return console.error(err)
-        if (!templates.length) return
+  chrome.storage.sync.get({
+    github_user: '',
+    github_password: '',
+    templates: '.github/ISSUE_TEMPLATES.md',
+    domain: 'github.com',
+  }, function(items) {
 
-        const currentButton = document.querySelector('.issues-listing .subnav .btn-primary')
-        const buttonText = currentButton.textContent.trim()
-        const dropdownString = renderList(buttonText, templates)
+    var github_user = items.github_user;
+    var github_password = items.github_password;
+    var templates = items.templates;
+    var domain = items.domain;
 
-        const tempEl = document.createElement('div')
-        tempEl.innerHTML = dropdownString
-        const dropdown = tempEl.children[0]
-        document.querySelector('.issues-listing .subnav .btn-primary').replaceWith(dropdown)
-      })
-    }
+    gitHubInjection(window, function () {
+      if ( domain == window.location.hostname && (isIssueList() || isIssue()) && !document.querySelector('.issues-listing .github-issue-templates-content')) {
+        getTemplateDefinition({repo: getRepo(), github_password: github_password, github_user: github_user, templates: templates}, function (err, templates) {
+          if (err) return console.error(err)
+          if (!templates.length) return
+
+          const currentButton = document.querySelector('.issues-listing .btn-primary')
+          const buttonText = currentButton.textContent.trim()
+          const dropdownString = renderList(buttonText, templates)
+
+          const tempEl = document.createElement('div')
+          tempEl.innerHTML = dropdownString
+          const dropdown = tempEl.children[0]
+          document.querySelector('.issues-listing .btn-primary').replaceWith(dropdown)
+        })
+      }
+    })
   })
 })
 
-function renderList (buttonText, templates) {
+function buttomStyle (){
+  if (isIssue()){
+    return "btn btn-primary btn-sm"
+  }
+  return "btn btn-primary"
+}
+
+function renderList (buttonText,templates) {
   return `
    <div class="float-right select-menu js-menu-container js-select-menu">
-      <button class="btn btn-primary select-menu-button js-menu-target" type="button">
+      <button class="${buttomStyle()} select-menu-button js-menu-target" type="button">
         ${buttonText}
       </button>
       <div class="github-issue-templates-content select-menu-modal-holder js-menu-content js-navigation-container">
@@ -61,23 +82,36 @@ function issueTemplatesList (templates) {
 }
 
 const templateCache = {}
-function getTemplateDefinition ({repo}, cb) {
+function getTemplateDefinition ({repo,github_password,github_user,templates}, cb) {
   if (templateCache[repo]) return cb(null, templateCache[repo])
   function respond (templates) {
     templateCache[repo] = templates
     cb(null, templates)
   }
 
-  var xhr = new XMLHttpRequest()
-  xhr.open('GET', `https://raw.githubusercontent.com/${repo}/master/.github/ISSUE_TEMPLATES.md`, true)
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState !== XMLHttpRequest.DONE) return
-    if (xhr.status === 404) return respond([])
-    if (xhr.status === 200) return respond(extractTemplates(xhr.responseText))
-    console.log(xhr.readyState, xhr.status, xhr.responseText)
-  }
-  xhr.send()
+
+    var raw_url = `https://raw.githubusercontent.com`
+    if (window.location.hostname != "github.com") {
+      raw_url = `https://raw.${window.location.hostname}`
+    }
+
+    var xhr = new XMLHttpRequest()
+    xhr.open('GET', `${raw_url}/${repo}/master/${templates}`, true)
+
+    if ( github_password != "" ) {
+      xhr.setRequestHeader("Authorization", "Basic " + btoa(github_user + ":" + github_password))
+    }
+
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState !== XMLHttpRequest.DONE) return
+      if (xhr.status === 404) return respond([])
+      if (xhr.status === 200) return respond(extractTemplates(xhr.responseText))
+      console.log(xhr.readyState, xhr.status, xhr.responseText)
+    }
+    xhr.send()
+
 }
+
 
 function extractTemplates (string) {
   const templates = hugeTemplateToTemplatesArray(string)
