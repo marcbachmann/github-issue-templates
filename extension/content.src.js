@@ -3,9 +3,7 @@
 const githubIssueUrl = require('github-issue-url')
 const frontmatter = require('front-matter')
 
-const isIssueList = () => !!document.querySelector('.issues-listing a.btn[href$="/issues/new"]')
-const getOwnerAndRepo = () => window.location.pathname.split('/').slice(1, 3)
-const getRepo = () => getOwnerAndRepo().join('/')
+const getRepo = () => window.location.pathname.split('/').slice(1, 3).join('/')
 
 const sanitize = (str) => str.replace(/[&<"']/g, (m) => {
   if (m === '&') return '&amp;'
@@ -32,27 +30,33 @@ const getDomainConfig = (name, cb) => {
 
 getDomainConfig(window.location.hostname, function (err, domain) {
   if (err) throw err
-  if (domain && isIssueList() && !document.querySelector('.issues-listing .github-issue-templates-content')) {
-    getTemplateDefinition({repo: getRepo(), domain}, function (err, templates) {
-      if (err) return console.error(err)
-      if (!templates.length) return
+  if (!domain) return
 
-      const currentButton = document.querySelector('.issues-listing .subnav .btn-primary')
-      const buttonText = currentButton.textContent.trim()
-      const dropdownString = renderList(buttonText, templates)
+  const currentButton = document.querySelector('a.btn[href$="/issues/new"]')
+  if (!currentButton) return
 
-      const tempEl = document.createElement('div')
-      tempEl.innerHTML = dropdownString
-      const dropdown = tempEl.children[0]
-      document.querySelector('.issues-listing .subnav .btn-primary').replaceWith(dropdown)
-    })
-  }
+  // Don't enhance the button in case we already did it
+  const buttonClasses = currentButton.className
+  if (/js-menu-target/.test(buttonClasses)) return
+
+  getTemplateDefinition({repo: getRepo(), domain}, function (err, templates) {
+    if (err) return console.error(err)
+    if (!templates.length) return
+
+    const buttonText = currentButton.textContent.trim()
+    const dropdownString = renderList(buttonClasses, buttonText, templates)
+
+    const tempEl = document.createElement('div')
+    tempEl.innerHTML = dropdownString
+    const dropdown = tempEl.children[0]
+    currentButton.replaceWith(dropdown)
+  })
 })
 
-function renderList (buttonText, templates) {
+function renderList (buttonClasses, buttonText, templates) {
   return `
    <div class="float-right select-menu js-menu-container js-select-menu">
-      <button class="btn btn-primary select-menu-button js-menu-target" type="button">
+      <button class="${buttonClasses} select-menu-button js-menu-target" type="button" style="float: none!important;">
         ${buttonText}
       </button>
       <div class="github-issue-templates-content select-menu-modal-holder js-menu-content js-navigation-container"
