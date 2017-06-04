@@ -37,7 +37,6 @@ function getDomains (cb) {
   chrome.storage.sync.get(null, function (items) {
     const domains = Object.keys(items).map(filterDomains(items)).filter(Boolean)
     if (!domains.find(({name}) => name === 'github.com')) domains.push({name: 'github.com'})
-    console.log(domains)
     cb(null, domains)
   })
 }
