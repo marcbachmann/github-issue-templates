@@ -67,7 +67,9 @@ function renderList () {
 
     const itemsListEmpty = listItems.length ? '' : `
       <div class="content-padded">
-        There are no configured domains. Please add one.
+        <p>This extension extracts issue templates from a <code>.github/ISSUE_TEMPLATES.md</code> file and enhances the github issue create button.</p>
+        <p>It should work out of the box for github.com. You'll just need to create the template file.</p>
+        <p>If you'd like to use a custom issue template path or use it for GitHub Enterprise, you can add a configuration for a custom domain.</p>
       </div>
     `
 
