@@ -1,9 +1,11 @@
-/* globals XMLHttpRequest, chrome, btoa */
+/* globals XMLHttpRequest, chrome, btoa, URL */
 'use strict'
-const githubIssueUrl = require('github-issue-url')
-const frontmatter = require('front-matter')
+const extractTemplates = require('../extract-templates')
 
-const getRepo = () => window.location.pathname.split('/').slice(1, 3).join('/')
+const getRepo = (url) => {
+  const match = /\/([a-zA-Z0-9\-_]*)\/([a-zA-Z0-9\-_]*)\/issues\/new/.exec(url)
+  if (match) return `${match[1]}/${match[2]}`
+}
 
 const sanitize = (str) => str.replace(/[&<"']/g, (m) => {
   if (m === '&') return '&amp;'
@@ -28,32 +30,35 @@ const getDomainConfig = (name, cb) => {
   })
 }
 
-getDomainConfig(window.location.hostname, function (err, domain) {
-  if (err) throw err
-  if (!domain) return
-
-  const currentButton = document.querySelector('a.btn[href$="/issues/new"]')
-  if (!currentButton) return
-
+function enhance (button) {
   // Don't enhance the button in case we already did it
-  const buttonClasses = currentButton.className
+  const buttonClasses = button.className
   if (/js-menu-target/.test(buttonClasses)) return
 
-  getTemplateDefinition({repo: getRepo(), domain}, function (err, templates) {
-    if (err) return console.error(err)
-    if (!templates.length) return
+  const url = new URL(button.href)
+  const hostname = url.hostname
+  const repo = getRepo(url.href)
+  const origin = url.origin
+  getDomainConfig(hostname, function (err, domain) {
+    if (err) throw err
+    if (!domain) return
 
-    const buttonText = currentButton.textContent.trim()
-    const dropdownString = renderList(buttonClasses, buttonText, templates)
+    getTemplateDefinition({repo, domain, origin}, function (err, templates) {
+      if (err) return console.error(err)
+      if (!templates.length) return
 
-    const tempEl = document.createElement('div')
-    tempEl.innerHTML = dropdownString
-    const dropdown = tempEl.children[0]
-    currentButton.replaceWith(dropdown)
+      const buttonText = button.textContent.trim()
+      const dropdownString = renderList(repo, origin, buttonClasses, buttonText, templates)
+
+      const tempEl = document.createElement('div')
+      tempEl.innerHTML = dropdownString
+      const dropdown = tempEl.children[0]
+      button.replaceWith(dropdown)
+    })
   })
-})
+}
 
-function renderList (buttonClasses, buttonText, templates) {
+function renderList (repo, origin, buttonClasses, buttonText, templates) {
   return `
    <div class="float-right select-menu js-menu-container js-select-menu">
       <button class="${buttonClasses} select-menu-button js-menu-target" type="button" style="float: none!important;">
@@ -73,9 +78,8 @@ function renderList (buttonClasses, buttonText, templates) {
 
 function issueTemplatesList (templates) {
   return templates.map(function (template) {
-    const queryString = githubIssueUrl(template)
     return `
-      <a href="issues/new?${queryString}" class="select-menu-item js-navigation-item">
+      <a href="${template.url}" class="select-menu-item js-navigation-item">
         <div class="select-menu-item-text">
           ${sanitize(template.name || 'Unnamed Template')}
         </div>
@@ -85,7 +89,7 @@ function issueTemplatesList (templates) {
 }
 
 const templateCache = {}
-function getTemplateDefinition ({repo, domain}, cb) {
+function getTemplateDefinition ({repo, origin, domain}, cb) {
   if (templateCache[repo]) return cb(null, templateCache[repo])
 
   function respond (templates) {
@@ -105,36 +109,14 @@ function getTemplateDefinition ({repo, domain}, cb) {
   xhr.onreadystatechange = function () {
     if (xhr.readyState !== XMLHttpRequest.DONE) return
     if (xhr.status === 404) return respond([])
-    if (xhr.status === 200) return respond(extractTemplates(xhr.responseText))
-    console.log(xhr.readyState, xhr.status, xhr.responseText)
+    if (xhr.status === 200) {
+      const templates = extractTemplates(xhr.responseText, {repo, host: origin})
+      return respond(templates)
+    }
+    console.error(xhr.readyState, xhr.status, xhr.responseText)
   }
   xhr.send()
 }
 
-function extractTemplates (string) {
-  const templates = hugeTemplateToTemplatesArray(string)
-  return templates.map(function (template) {
-    const {attributes, body} = frontmatter(template)
-    return {
-      name: attributes.name,
-      title: attributes.title,
-      labels: attributes.labels,
-      assignee: attributes.assignee,
-      repo: attributes.repo,
-      host: attributes.host,
-      body: body
-    }
-  })
-}
-
-function hugeTemplateToTemplatesArray (string) {
-  const strings = string.trim().split('\n')
-  const templates = strings.reduce(function (templates, line) {
-    const template = templates[templates.length - 1]
-    if (line.trim() !== '---') template.push(line)
-    else if (template.indexOf('---', 1) !== -1) templates.push(['---'])
-    else template.push('---')
-    return templates
-  }, [[]]).map((t) => t.join('\n'))
-  return templates
-}
+const buttons = document.querySelectorAll('a.btn[href$="/issues/new"]')
+buttons.forEach(enhance)

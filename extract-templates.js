@@ -3,7 +3,7 @@ const githubIssueUrl = require('github-issue-url')
 
 module.exports = extractTemplates
 
-function extractTemplates (string) {
+function extractTemplates (string, defaults = {}) {
   const templates = hugeTemplateToTemplatesArray(string)
   return templates.map(function (parsedTemplate) {
     const {attributes, body} = frontmatter(parsedTemplate)
@@ -12,8 +12,8 @@ function extractTemplates (string) {
       title: attributes.title,
       labels: attributes.labels,
       assignee: attributes.assignee,
-      repo: attributes.repo,
-      host: attributes.host,
+      repo: attributes.repo || defaults.repo,
+      host: attributes.host || defaults.host,
       body: body
     }
 
