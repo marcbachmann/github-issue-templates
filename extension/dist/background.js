@@ -7,7 +7,7 @@ chrome.storage.onChanged.addListener(updateContentInjector)
 function updateContentInjector () {
   getDomains(function (err, domains) {
     if (err) throw err
-    chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
+    chrome.declarativeContent.onPageChanged.removeRules(undefined, function () {
       chrome.declarativeContent.onPageChanged.addRules(domains.map(toRule))
     })
   })

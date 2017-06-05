@@ -146,7 +146,7 @@ function requestPermission ({previousName, domain, isNew}, cb) {
   setCurrent({domain, isNew}, function () {
     chrome.permissions.request({
       origins: [`https://${domain.name}/`, `https://*.${domain.name}/`]
-    }, function(granted) {
+    }, function (granted) {
       removeCurrent(() => cb(granted, {previousName, domain, isNew}))
     })
   })
