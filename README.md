@@ -24,7 +24,7 @@ Example of the chrome extension:
 ### Usage
 
 Create the file `.github/ISSUE_TEMPLATES.md`.  
-Check the content in [github-issues-templates/.github/ISSUE_TEMPLATES])(./.github/ISSUE_TEMPLATES.md) for an example config.
+Check the content in [github-issues-templates/.github/ISSUE_TEMPLATES](./.github/ISSUE_TEMPLATES.md) for an example config.
 
 ```bash
 # Run
